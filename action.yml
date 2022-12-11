@@ -1,16 +1,16 @@
-name: Upload mod to NexusMods, Thunderstore and ModVault
+name: Upload mod to NexusMods, Thunderstore
 
-description: A GitHub Action to upload a mod to NexusMods, Thunderstore, and ModVault.
+description: A GitHub Action to upload a mod to NexusMods, Thunderstore.
 
 inputs:
   mod-id:
-    description: 'The mod ID on NexusMods, Thunderstore, and ModVault.'
+    description: 'The mod ID on NexusMods'
     required: true
   archive-file:
     description: 'The file to upload.'
     required: true
   file-name:
-    description: 'The name of the file on NexusMods, Thunderstore, and ModVault.'
+    description: 'The name of the file on NexusMods, Thunderstore'
     required: true
   version:
     description: 'The version of the uploaded file.'
