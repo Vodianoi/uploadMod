@@ -1,4 +1,4 @@
- # __Upload mod to NexusMods, Thunderstore and ModVault__
+ # __Upload mod to NexusMods and Thunderstore__
  
  A GitHub Action to upload a mod to NexusMods and Thunderstore. This Action allows you to automate the process of uploading your mod to these popular modding platforms, making it easier to share your work with the community.
  
