@@ -1,7 +1,7 @@
 name: Upload mod to NexusMods, Thunderstore
-
+icon: upload
 description: A GitHub Action to upload a mod to NexusMods, Thunderstore.
-
+color: green
 inputs:
   mod-id:
     description: 'The mod ID on NexusMods'
