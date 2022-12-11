@@ -32,15 +32,18 @@ inputs:
     description: 'The path to the toml configuration file for Thunderstore.'
     required: false
 
-secrets:
   NEXUSMOD_API_KEY:
     description: 'The API key for your NexusMods account.'
+    required: true
   NEXUSMOD_COOKIE_NEXUSID:
     description: 'The session cookie for your NexusMods account.'
+    required: true
   NEXUSMOD_COOKIE_SID_DEVELOP:
     description: 'The session cookie for your NexusMods account.'
+    required: true
   THUNDERSTORE_TOKEN:
     description: 'The token for your Thunderstore account.'
+    required: true
 
 runs:
   using: 'node12'

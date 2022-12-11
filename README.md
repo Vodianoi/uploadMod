@@ -35,17 +35,19 @@
  
 ## __Inputs__
 
-| Name | Description | Type | Required | Default |
-| ---- | ----------- | ---- | -------- | ------- |
-| `mod-id` | The mod ID on NexusMods, Thunderstore, and ModVault. | `string` | `true` | N/A |
-| `archive-file` | The file to upload. | `string` | `true` | N/A |
-| `file-name` | The name of the file on NexusMods, Thunderstore, and ModVault. | `string` | `true` | N/A |
-| `version` | The version of the uploaded file. | `string` | `true` | N/A |
-| `category` | The mod file category on NexusMods. | `string` | `true` | `Main` |
-| `description` | A description of the mod. | `string` | `false` | N/A |
-| `game` | The game the mod is for. | `string` | `true` | N/A |
-| `namespace` | The namespace of the mod on Thunderstore. | `string` | `false` | N/A |
-| `tomlConfigPath` | The path to the toml configuration file for Thunderstore. | `string` | `false` | N/A |
+| Input                 | Description                                                                              | Required |
+| --------------------- | ---------------------------------------------------------------------------------------- | -------- |
+| `file-name`           | The name of the file on NexusMods, Thunderstore, and ModVault.                           | Yes      |
+| `version`             | The version of the uploaded file.                                                        | Yes      |
+| `category`            | The mod file category on NexusMods.                                                      | Yes      |
+| `description`         | A description of the mod.                                                                 | No       |
+| `game`                | The game the mod is for.                                                                  | Yes      |
+| `namespace`           | The namespace of the mod on Thunderstore.                                                 | No       |
+| `tomlConfigPath`      | The path to the toml configuration file for Thunderstore.                                 | No       |
+| `NEXUSMOD_API_KEY`    | The API key for your NexusMods account.                                                   | Yes      |
+| `NEXUSMOD_COOKIE_NEXUSID` | The session cookie for your NexusMods account.                                            | Yes      |
+| `NEXUSMOD_COOKIE_SID_DEVELOP` | The session cookie for your NexusMods account.                                           | Yes      |
+| `THUNDERSTORE_TOKEN`  | The token for your Thunderstore account.                                                  | Yes      |
  
  ## __Limitations__
  
