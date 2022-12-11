@@ -61,7 +61,7 @@ try {
   const { owner, repo } = github.context.repo;
   const { sha } = github.context.payload.head_commit;
   const comment = `Successfully uploaded mod to NexusMods and Thunderstore: ${modId}`;
-  octokit.repos.createCommitComment({ owner, repo, sha, body: comment });
+  octokit.rest.repos.createCommitComment({ owner, repo, sha, body: comment });
 } catch (error) {
   core.setFailed(error.message);
 }
