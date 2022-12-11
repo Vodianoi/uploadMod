@@ -1,13 +1,47 @@
-name: 'Hello World'
-description: 'Greet someone and record the time'
+name: Upload mod to NexusMods, Thunderstore and ModVault
+
+description: A GitHub Action to upload a mod to NexusMods, Thunderstore, and ModVault.
+
 inputs:
-  who-to-greet:  # id of input
-    description: 'Who to greet'
+  mod-id:
+    description: 'The mod ID on NexusMods, Thunderstore, and ModVault.'
     required: true
-    default: 'World'
-outputs:
-  time: # id of output
-    description: 'The time we greeted you'
+  archive-file:
+    description: 'The file to upload.'
+    required: true
+  file-name:
+    description: 'The name of the file on NexusMods, Thunderstore, and ModVault.'
+    required: true
+  version:
+    description: 'The version of the uploaded file.'
+    required: true
+  category:
+    description: 'The mod file category on NexusMods.'
+    required: true
+    default: 'Main'
+  description:
+    description: 'A description of the mod.'
+    required: false
+  game:
+    description: 'The game the mod is for.'
+    required: true
+  namespace:
+    description: 'The namespace of the mod on Thunderstore.'
+    required: false
+  tomlConfigPath:
+    description: 'The path to the toml configuration file for Thunderstore.'
+    required: false
+
+secrets:
+  NEXUSMOD_API_KEY:
+    description: 'The API key for your NexusMods account.'
+  NEXUSMOD_COOKIE_NEXUSID:
+    description: 'The session cookie for your NexusMods account.'
+  NEXUSMOD_COOKIE_SID_DEVELOP:
+    description: 'The session cookie for your NexusMods account.'
+  THUNDERSTORE_TOKEN:
+    description: 'The token for your Thunderstore account.'
+
 runs:
-  using: 'node16'
+  using: 'node12'
   main: 'index.js'
