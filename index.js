@@ -2,12 +2,19 @@ const core = require('@actions/core');
 const exec = require('@actions/exec');
 const github = require('@actions/github');
 
+
 try {
   // Install OdinPlus Mod Uploader
   exec.exec('dotnet tool install -g Digitalroot.OdinPlusModUploader');
   exec.exec('wget https://github.com/thunderstore-io/thunderstore-cli/releases/download/0.1.7/tcli-0.1.7-linux-x64.tar.gz')
   exec.exec('tar -xf tcli-0.1.7-linux-x64.tar.gz')
   exec.exec('mv ./tcli-0.1.7-linux-x64/tcli tcli')
+} catch (error){
+  core.setFailed(error);
+}
+
+try {
+
   // Get inputs
   const modId = core.getInput('mod-id');
   const archiveFile = core.getInput('archive-file');
@@ -61,7 +68,7 @@ try {
   const { owner, repo } = github.context.repo;
   const { sha } = github.context.payload.head_commit;
   const comment = `Successfully uploaded mod to NexusMods and Thunderstore: ${modId}`;
-  octokit.rest.repos.createCommitComment({ owner, repo, sha, body: comment });
+  await octokit.rest.repos.createCommitComment({ owner, repo, sha, body: comment });
 } catch (error) {
   core.setFailed(error.message);
 }
