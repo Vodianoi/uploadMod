@@ -14,7 +14,7 @@
      runs-on: ubuntu-latest
      steps:
        - uses: actions/checkout@v2
-       - uses: your-username/upload-mod-to-nexusmods-thunderstore-and-modvault@v1
+       - uses: Vodianoi/uploadMod@v1
          with:
            mod-id: 'your-mod-id'
            archive-file: 'your-mod-file.zip'
