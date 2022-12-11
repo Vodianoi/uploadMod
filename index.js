@@ -1,12 +1,13 @@
 const core = require('@actions/core');
+const exec = require('@actions/exec');
 const github = require('@actions/github');
 
 try {
   // Install OdinPlus Mod Uploader
-  core.exec('dotnet tool install -g Digitalroot.OdinPlusModUploader');
-  core.exec('wget https://github.com/thunderstore-io/thunderstore-cli/releases/download/0.1.7/tcli-0.1.7-linux-x64.tar.gz')
-  core.exec('tar -xf tcli-0.1.7-linux-x64.tar.gz')
-  core.exec('mv ./tcli-0.1.7-linux-x64/tcli tcli')
+  exec.exec('dotnet tool install -g Digitalroot.OdinPlusModUploader');
+  exec.exec('wget https://github.com/thunderstore-io/thunderstore-cli/releases/download/0.1.7/tcli-0.1.7-linux-x64.tar.gz')
+  exec.exec('tar -xf tcli-0.1.7-linux-x64.tar.gz')
+  exec.exec('mv ./tcli-0.1.7-linux-x64/tcli tcli')
   // Get inputs
   const modId = core.getInput('mod-id');
   const archiveFile = core.getInput('archive-file');
@@ -29,7 +30,7 @@ try {
   // Replace <mod-id>, <archive-file>, <file-name>, <version>, <category>, and <description> with the appropriate values
   // The <game> parameter is optional and defaults to 'valheim'
   const nexusUploadCommand = `opmu nexusmods upload ${modId} ${archiveFile} -f ${fileName} -v ${version} -t ${category} -d ${description} -g ${game} -dmfu -ddwm -dvu -dmv -drpu`;
-  core.exec(nexusUploadCommand);
+  exec.exec(nexusUploadCommand);
 
 
 
@@ -40,14 +41,14 @@ try {
   if(tomlConfigPath != null)
   {
     const thunderstoreUploadCommand = `./tcli publish --config-path ${tomlConfigPath} --token core.getInput('THUNDERSTORE_TOKEN');`;
-    core.exec(thunderstoreUploadCommand);
+    exec.exec(thunderstoreUploadCommand);
   }
   else
   {  
     const thunderstoreInitCommand = `./tcli init --package-name ${fileName} --package-namespace ${namespace} --package-version ${version}`;
-    core.exec(thunderstoreInitCommand);
+    exec.exec(thunderstoreInitCommand);
     const thunderstoreUploadCommand = `./tcli publish --token core.getInput('THUNDERSTORE_TOKEN');`;
-    core.exec(thunderstoreUploadCommand);
+    exec.exec(thunderstoreUploadCommand);
   }
 
   // Upload mod to ModVault
