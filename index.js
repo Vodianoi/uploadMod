@@ -22,9 +22,8 @@ try {
   const apiKey = core.getInput('NEXUSMOD_API_KEY');
   const cookieNexusId = core.getInput('NEXUSMOD_COOKIE_NEXUSID');
   const cookieSidDevelop = core.getInput('NEXUSMOD_COOKIE_SID_DEVELOP');
-  core.exportVariable('NEXUSMOD_API_KEY', apiKey);
-  core.exportVariable('NEXUSMOD_COOKIE_NEXUSID', cookieNexusId);
-  core.exportVariable('NEXUSMOD_COOKIE_SID_DEVELOP', cookieSidDevelop);
+  const thunderstore_token = core.getInput('THUNDERSTORE_TOKEN');
+  const GITHUB_TOKEN = core.getInput('GITHUB_TOKEN');
 
   // Upload mod to NexusMods
   // Replace <mod-id>, <archive-file>, <file-name>, <version>, <category>, and <description> with the appropriate values
@@ -40,14 +39,14 @@ try {
 
   if(tomlConfigPath != null)
   {
-    const thunderstoreUploadCommand = `./tcli publish --config-path ${tomlConfigPath} --token ${core.getInput('THUNDERSTORE_TOKEN')}`;
+    const thunderstoreUploadCommand = `./tcli publish --config-path ${tomlConfigPath} --token ${thunderstore_token}`;
     exec.exec(thunderstoreUploadCommand);
   }
   else
   {  
     const thunderstoreInitCommand = `./tcli init --package-name ${fileName} --package-namespace ${namespace} --package-version ${version}`;
     exec.exec(thunderstoreInitCommand);
-    const thunderstoreUploadCommand = `./tcli publish --token ${core.getInput('THUNDERSTORE_TOKEN')}`;
+    const thunderstoreUploadCommand = `./tcli publish --token ${thunderstore_token}`;
     exec.exec(thunderstoreUploadCommand);
   }
 
@@ -58,7 +57,7 @@ try {
   // core.exec(modvaultUploadCommand);
 
   // Create a new comment on the commit with the upload result
-  const octokit = github.getOctokit(core.getInput('GITHUB_TOKEN'));
+  const octokit = github.getOctokit(GITHUB_TOKEN);
   const { owner, repo } = github.context.repo;
   const { sha } = github.context.payload.head_commit;
   const comment = `Successfully uploaded mod to NexusMods and Thunderstore: ${modId}`;

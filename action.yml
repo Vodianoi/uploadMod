@@ -44,6 +44,9 @@ inputs:
   THUNDERSTORE_TOKEN:
     description: 'The token for your Thunderstore account.'
     required: true
+  GITHUB_TOKEN:
+    description: 'The token for your Thunderstore account.'
+    required: true
 
 runs:
   using: 'node12'
