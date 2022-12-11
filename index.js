@@ -4,10 +4,10 @@ const github = require('@actions/github');
 
 
 // Install OdinPlus Mod Uploader
-exec.exec('dotnet tool install -g Digitalroot.OdinPlusModUploader');
-exec.exec('wget https://github.com/thunderstore-io/thunderstore-cli/releases/download/0.1.7/tcli-0.1.7-linux-x64.tar.gz')
-exec.exec('tar -xf tcli-0.1.7-linux-x64.tar.gz')
-exec.exec('mv ./tcli-0.1.7-linux-x64/tcli tcli')
+await exec.exec('dotnet tool install -g Digitalroot.OdinPlusModUploader');
+await exec.exec('wget https://github.com/thunderstore-io/thunderstore-cli/releases/download/0.1.7/tcli-0.1.7-linux-x64.tar.gz')
+await exec.exec('tar -xf tcli-0.1.7-linux-x64.tar.gz')
+await exec.exec('mv ./tcli-0.1.7-linux-x64/tcli tcli')
 
 
 // Get inputs
@@ -31,7 +31,7 @@ const GITHUB_TOKEN = core.getInput('GITHUB_TOKEN');
 // Replace <mod-id>, <archive-file>, <file-name>, <version>, <category>, and <description> with the appropriate values
 // The <game> parameter is optional and defaults to 'valheim'
 const nexusUploadCommand = `opmu nexusmods upload ${modId} ${archiveFile} -f ${fileName} -v ${version} -t ${category} -d ${description} -g ${game} -dmfu -ddwm -dvu -dmv -drpu`;
-exec.exec(nexusUploadCommand);
+await exec.exec(nexusUploadCommand);
 
 
 
@@ -42,14 +42,14 @@ exec.exec(nexusUploadCommand);
 if(tomlConfigPath != null)
 {
   const thunderstoreUploadCommand = `./tcli publish --config-path ${tomlConfigPath} --token ${thunderstore_token}`;
-  exec.exec(thunderstoreUploadCommand);
+  await exec.exec(thunderstoreUploadCommand);
 }
 else
 {  
   const thunderstoreInitCommand = `./tcli init --package-name ${fileName} --package-namespace ${namespace} --package-version ${version}`;
-  exec.exec(thunderstoreInitCommand);
+  await exec.exec(thunderstoreInitCommand);
   const thunderstoreUploadCommand = `./tcli publish --token ${thunderstore_token}`;
-  exec.exec(thunderstoreUploadCommand);
+  await exec.exec(thunderstoreUploadCommand);
 }
 
 // Upload mod to ModVault
