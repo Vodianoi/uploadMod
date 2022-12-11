@@ -4,9 +4,9 @@ const github = require('@actions/github');
 try {
   // Install OdinPlus Mod Uploader
   core.exec('dotnet tool install -g Digitalroot.OdinPlusModUploader');
-  core.exec ('wget https://github.com/thunderstore-io/thunderstore-cli/releases/download/0.1.7/tcli-0.1.7-linux-x64.tar.gz')
-  core.exec ('tar -xf tcli-0.1.7-linux-x64.tar.gz')
-  core.exec ('mv ./tcli-0.1.7-linux-x64/tcli tcli')
+  core.exec('wget https://github.com/thunderstore-io/thunderstore-cli/releases/download/0.1.7/tcli-0.1.7-linux-x64.tar.gz')
+  core.exec('tar -xf tcli-0.1.7-linux-x64.tar.gz')
+  core.exec('mv ./tcli-0.1.7-linux-x64/tcli tcli')
   // Get inputs
   const modId = core.getInput('mod-id');
   const archiveFile = core.getInput('archive-file');
