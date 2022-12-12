@@ -9,7 +9,8 @@ async function run(){
     await exec('dotnet tool install -g Digitalroot.OdinPlusModUploader')
     .then(() => exec('wget https://github.com/thunderstore-io/thunderstore-cli/releases/download/0.1.7/tcli-0.1.7-linux-x64.tar.gz'))
     .then(() => exec('tar -xf tcli-0.1.7-linux-x64.tar.gz'))
-    .then(() => exec('mv ./tcli-0.1.7-linux-x64/tcli tcli'));
+    .then(() => exec('mv ./tcli-0.1.7-linux-x64/tcli tcli'))
+    .catch((error) => core.setFailed(error));
 
 
     // Get inputs
@@ -32,8 +33,13 @@ async function run(){
     // Upload mod to NexusMods
     // Replace <mod-id>, <archive-file>, <file-name>, <version>, <category>, and <description> with the appropriate values
     // The <game> parameter is optional and defaults to 'valheim'
-    const nexusUploadCommand = `opmu nexusmods upload ${modId} ${archiveFile} -f ${fileName} -v ${version} -t ${category} -d ${description} -g ${game} -dmfu -ddwm -dvu -dmv -drpu`;
-    exec(nexusUploadCommand);
+    const nexusCheckCommand = `opmu nexusmods check -k ${apiKey} -cnxid ${cookieNexusId} -csid ${cookieSidDevelop}`
+    const nexusUploadCommand = `opmu nexusmods upload ${modId} ${archiveFile} -f ${fileName} -v ${version} -t ${category}
+     -d ${description} -g ${game} -dmfu -ddwm -dvu -dmv -drpu`;
+    await exec(nexusCheckCommand)
+          .then(() => exec(nexusUploadCommand))
+          .catch((error) => core.setFailed(error));
+    
 
 
 
@@ -43,15 +49,20 @@ async function run(){
 
     if(tomlConfigPath != null)
     {
-      const thunderstoreUploadCommand = `./tcli publish --config-path ${tomlConfigPath} --token ${thunderstore_token}`;
-      exec(thunderstoreUploadCommand);
+      const thunderstoreUploadCommand = `./tcli publish --config-path ${tomlConfigPath} 
+                                                        --token ${thunderstore_token}`;
+      await exec(thunderstoreUploadCommand)
+      .catch((error) => core.setFailed(error));
     }
     else
     {  
-      const thunderstoreInitCommand = `./tcli init --package-name ${fileName} --package-namespace ${namespace} --package-version ${version}`;
-      exec(thunderstoreInitCommand);
+      const thunderstoreInitCommand = `./tcli init --package-name ${fileName} 
+                                                   --package-namespace ${namespace} 
+                                                   --package-version ${version}`;
       const thunderstoreUploadCommand = `./tcli publish --token ${thunderstore_token}`;
-      exec(thunderstoreUploadCommand);
+      await exec(thunderstoreInitCommand)
+      .then(() => exec(thunderstoreUploadCommand))
+      .catch((error) => core.setFailed(error));
     }
 
     // Upload mod to ModVault
@@ -65,7 +76,10 @@ async function run(){
     const { owner, repo } = github.context.repo;
     const { sha } = github.context.payload.head_commit;
     const comment = `Successfully uploaded mod to NexusMods and Thunderstore: ${modId}`;
-    await octokit.rest.repos.createCommitComment({ owner, repo, sha, body: comment });
+
+    await octokit.rest.repos.createCommitComment({ owner, repo, sha, body: comment })
+          .catch((error) => core.setFailed(error))
+          
   } catch (error){
     core.setFailed(error);
   }
