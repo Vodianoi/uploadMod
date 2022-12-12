@@ -31,14 +31,10 @@ async function run(){
     const GITHUB_TOKEN = core.getInput('GITHUB_TOKEN');
 
     // Upload mod to NexusMods
-    // Replace <mod-id>, <archive-file>, <file-name>, <version>, <category>, and <description> with the appropriate values
-    // The <game> parameter is optional and defaults to 'valheim'
-    const nexusCheckCommand = `opmu nexusmods check -k ${apiKey} -cnxid ${cookieNexusId} -csid ${cookieSidDevelop}`
-    const nexusUploadCommand = `opmu nexusmods upload ${modId} ${archiveFile} -f "${fileName}${version}" -v ${version} -t "${category}" -d "${description}" -g ${game} -dmfu -ddwm -dvu -dmv -drpu`;
-    await exec(nexusCheckCommand)
-          .then(() => exec(nexusUploadCommand))
-          .catch((error) => core.setFailed(error));
-    
+    await exec('opmu', ['nexusmods', 'check', `-k`, `${apiKey}`, `-cnxid`, `${cookieNexusId}`, `-csid`, `${cookieSidDevelop}`])
+    .then(() => exec('opmu', ['nexusmods', 'upload', `${modId}`, `${archiveFile}`, `-f`, `${fileName}${version}`, `-v`, `${version}`, `-t`, `${category}`, `-d`, `${description}`, `-g`, `${game}`, `-dmfu`, `-ddwm`, `-dvu`, `-dmv`, `-drpu`]))
+    .catch((error) => core.setFailed(error));
+  
 
 
 
@@ -48,20 +44,16 @@ async function run(){
 
     if(tomlConfigPath != null)
     {
-      const thunderstoreUploadCommand = `./tcli publish --config-path ${tomlConfigPath} 
-                                                        --token ${thunderstore_token}`;
-      await exec(thunderstoreUploadCommand)
+      await exec('./tcli', ['publish', `--config-path`, `${tomlConfigPath}`, `--token`, `${thunderstore_token}`])
       .catch((error) => core.setFailed(error));
+    
     }
     else
     {  
-      const thunderstoreInitCommand = `./tcli init --package-name ${fileName} 
-                                                   --package-namespace ${namespace} 
-                                                   --package-version ${version}`;
-      const thunderstoreUploadCommand = `./tcli publish --token ${thunderstore_token}`;
-      await exec(thunderstoreInitCommand)
-      .then(() => exec(thunderstoreUploadCommand))
+      await exec('./tcli', ['init', `--package-name`, `${fileName}`, `--package-namespace`, `${namespace}`, `--package-version`, `${version}`])
+      .then(() => exec('./tcli', ['publish', `--token`, `${thunderstore_token}`]))
       .catch((error) => core.setFailed(error));
+    
     }
 
     // Upload mod to ModVault
