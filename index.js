@@ -34,8 +34,7 @@ async function run(){
     // Replace <mod-id>, <archive-file>, <file-name>, <version>, <category>, and <description> with the appropriate values
     // The <game> parameter is optional and defaults to 'valheim'
     const nexusCheckCommand = `opmu nexusmods check -k ${apiKey} -cnxid ${cookieNexusId} -csid ${cookieSidDevelop}`
-    const nexusUploadCommand = `opmu nexusmods upload ${modId} ${archiveFile} -f ${fileName} -v ${version} -t ${category}
-     -d ${description} -g ${game} -dmfu -ddwm -dvu -dmv -drpu`;
+    const nexusUploadCommand = `opmu nexusmods upload ${modId} ${archiveFile} -f "${fileName}${version}" -v ${version} -t "${category}" -d "${description}" -g ${game} -dmfu -ddwm -dvu -dmv -drpu`;
     await exec(nexusCheckCommand)
           .then(() => exec(nexusUploadCommand))
           .catch((error) => core.setFailed(error));
@@ -79,7 +78,7 @@ async function run(){
 
     await octokit.rest.repos.createCommitComment({ owner, repo, sha, body: comment })
           .catch((error) => core.setFailed(error))
-          
+
   } catch (error){
     core.setFailed(error);
   }
