@@ -32,7 +32,7 @@ async function run(){
 
     // Upload mod to NexusMods
     await exec('opmu', ['nexusmods', 'check', `-k`, `${apiKey}`, `-cnxid`, `${cookieNexusId}`, `-csid`, `${cookieSidDevelop}`])
-    .then(() => exec('opmu', ['nexusmods', 'upload', `${modId}`, `${archiveFile}`, `-f`, `${fileName} ${version}`, `-v`, `${version}`, `-t`, `${category}`,`-d`, `"${description}"`]))
+    .then(() => exec('opmu', ['nexusmods', 'upload', `${modId}`, `${archiveFile}`, `-f`, `${fileName}-${version}`, `-v`, `${version}`, `-t`, `${category}`,`-d`, `"${description}"`]))
     .catch((error) => core.setFailed(error));
   
 
