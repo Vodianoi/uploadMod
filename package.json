@@ -1,6 +1,6 @@
 {
   "name": "upload-mod-action",
-  "version": "0.9.33",
+  "version": "0.9.34",
   "description": "A GitHub Action to upload a mod to NexusMods and Thunderstore. This Action allows you to automate the process of uploading your mod to these popular modding platforms, making it easier to share your work with the community.",
   "main": "index.js",
   "scripts": {
@@ -20,6 +20,7 @@
   "dependencies": {
     "@actions/core": "^1.10.0",
     "@actions/exec": "^1.1.1",
-    "@actions/github": "^5.1.1"
+    "@actions/github": "^5.1.1",
+    "toml": "^3.0.0"
   }
 }
