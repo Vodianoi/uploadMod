@@ -57,7 +57,7 @@ async function run(){
     if(tomlConfigPath != null)
     {
       // await exec('QuickPing/tcli', ['init', `--config-path`, `${tomlConfigPath}`])
-      await exec('QuickPing/tcli', ['publish', `--token`, `${thunderstore_token}`])
+      await exec('QuickPing/tcli', ['publish', `--config-path`, `${tomlConfigPath}`, `--token`, `${thunderstore_token}`])
       .catch((error) => core.setFailed(error));
     
     }
