@@ -52,13 +52,7 @@ async function run(){
     // Replace <mod-id>, <archive-file>, and <file-name> with the appropriate values
     // The <version> and <description> parameters are optional
 
-    //If archiveFile is not null, then publish the mod using the archiveFile
-    if(archiveFile != null)
-    {
-      await exec('./tcli', ['init', `--package-name`, `${fileName}`, `--package-namespace`, `${namespace}`, `--package-version`, `${version}`]).catch((error) => core.setFailed(error));
-      await exec('./tcli', ['publish', `--token`, `${thunderstore_token}`, `--file`, `${archiveFile}`]).catch((error) => core.setFailed(error));
-    }
-    else 
+    //Check if tomlConfigPath is null
     if(tomlConfigPath != null)
     {
       const fs = require('fs');
