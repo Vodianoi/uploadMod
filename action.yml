@@ -51,7 +51,11 @@ inputs:
 runs:  
   using: "composite"
   steps:
-    - run: |
+    - env:
+          NEXUSMOD_API_KEY: ${{ inputs.NEXUSMOD_API_KEY }}
+          NEXUSMOD_COOKIE_NEXUSID: ${{ inputs.NEXUSMOD_COOKIE_NEXUSID }}
+          NEXUSMOD_COOKIE_SID_DEVELOP: ${{ inputs.NEXUSMOD_COOKIE_SID_DEVELOP }}
+      run: |
         # Install OdinPlus Mod Uploader
         dotnet tool install -g Digitalroot.OdinPlusModUploader
         wget https://github.com/thunderstore-io/thunderstore-cli/releases/download/0.1.7/tcli-0.1.7-linux-x64.tar.gz
@@ -75,8 +79,8 @@ runs:
         GITHUB_TOKEN=${{ inputs.GITHUB_TOKEN }}
 
         # Upload mod to NexusMods
-        opmu nexusmods check -k $apiKey -cnxid $cookieNexusId -csid $cookieSidDevelop
-        opmu nexusmods upload $modId $archiveFile -f "$fileName-$version" -v $version -g $game -t $category -d "$description"
+        opmu nx check -k $apiKey -cnxid $cookieNexusId -csid $cookieSidDevelop
+        opmu nx upload $modId $archiveFile -f "$fileName-$version" -v $version -g $game -t $category -d "$description"
 
         # Upload mod to Thunderstore
         # Replace <mod-id>, <archive-file>, and <file-name> with the appropriate values
