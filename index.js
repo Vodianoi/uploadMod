@@ -68,7 +68,7 @@ async function run(){
       const tomlFile = fs.readFileSync('./thunderstore.toml', 'utf8');
       const tomlData = toml.parse(tomlFile);
       tomlData.package.versionNumber = version;
-      fs.writeFileSync('./thunderstore.toml', tomlData);
+      fs.writeFileSync('./thunderstore.toml', toml.stringify(tomlData));
 
 
 
