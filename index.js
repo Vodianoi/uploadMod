@@ -63,14 +63,17 @@ async function run(){
         console.log('tomlConfigPath was copied to current directory');
       });
 
-      //Edit toml file to change package.versionNumber field to current version
+      //Edit toml file to change package.versionNumber field to current version, 
       const toml = require('toml');
       const tomlFile = fs.readFileSync('./thunderstore.toml', 'utf8');
       const tomlData = toml.parse(tomlFile);
       tomlData.package.versionNumber = version;
-      fs.writeFileSync('./thunderstore.toml', toml.stringify(tomlData));
+      fs.writeFileSync('./thunderstore.toml', tomlData);
 
-      
+
+
+
+
       await exec('./tcli', ['publish', `--token`, `${thunderstore_token}`])
       .catch((error) => core.setFailed(error));
     
