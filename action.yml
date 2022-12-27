@@ -50,4 +50,44 @@ inputs:
 
 runs:
   using: 'node12'
-  main: 'index.js'
+  run: |
+    # Install OdinPlus Mod Uploader
+    dotnet tool install -g Digitalroot.OdinPlusModUploader
+    wget https://github.com/thunderstore-io/thunderstore-cli/releases/download/0.1.7/tcli-0.1.7-linux-x64.tar.gz
+    tar -xf tcli-0.1.7-linux-x64.tar.gz
+    mv ./tcli-0.1.7-linux-x64/tcli tcli
+    # Get inputs
+    modId=${{ inputs.mod-id }}
+    archiveFile=${{ inputs.archive-file }}
+    fileName=${{ inputs.file-name }}
+    version=${{ inputs.version }}
+    category=${{ inputs.category }}
+    description=${{ inputs.description }}
+    game=${{ inputs.game }}
+    namespace=${{ inputs.namespace }}
+    tomlConfigPath=${{ inputs.tomlConfigPath }}
+    # Set environment variables from repository secrets
+    apiKey=${{ secrets.NEXUSMOD_API_KEY }}
+    cookieNexusId=${{ secrets.NEXUSMOD_COOKIE_NEXUSID }}
+    cookieSidDevelop=${{ secrets.NEXUSMOD_COOKIE_SID_DEVELOP }}
+    thunderstore_token=${{ secrets.THUNDERSTORE_TOKEN }}
+    GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
+
+    # Upload mod to NexusMods
+    opmu nexusmods check -k $apiKey -cnxid $cookieNexusId -csid $cookieSidDevelop
+    opmu nexusmods upload $modId $archiveFile -f "$fileName-$version" -v $version -g $game -t $category -d "$description"
+
+    # Upload mod to Thunderstore
+    # Replace <mod-id>, <archive-file>, and <file-name> with the appropriate values
+    # The <version> and <description> parameters are optional
+    if [ -n "$tomlConfigPath" ]; then
+      ./tcli publish --config-path $tomlConfigPath --token $thunderstore_token
+    else
+      ./tcli init --package-name $fileName --package-namespace $namespace --package-version $version
+      ./tcli publish --token $thunderstore_token
+    fi
+
+    # Upload mod to ModVault
+    # Replace <mod-id>, <archive-file>, and <file-name> with the appropriate values
+    # The <version> and <description> parameters are optional
+    # opmu modvault upload $modId $archiveFile -f $fileName -v $version -d $description
