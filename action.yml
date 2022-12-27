@@ -63,7 +63,7 @@ runs:
         fileName=${{ inputs.file-name }}
         version=${{ inputs.version }}
         category=${{ inputs.category }}
-        description=${{ inputs.description }}
+        description="${{ inputs.description }}"
         game=${{ inputs.game }}
         namespace=${{ inputs.namespace }}
         tomlConfigPath=${{ inputs.tomlConfigPath }}
