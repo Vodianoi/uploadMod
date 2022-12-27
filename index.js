@@ -40,6 +40,9 @@ async function run(){
                        `-g`, `${game}`,
                         `-t`, `${category}`,
                         `-d`, `"${description}"`
+                        `-k`, `${apiKey}`,
+                        `-cnxid`, `${cookieNexusId}`,
+                        `-csid`, `${cookieSidDevelop}`
                         ])
                         .catch((error) => core.setFailed(error));
                       
@@ -53,6 +56,7 @@ async function run(){
 
     if(tomlConfigPath != null)
     {
+      await exec('./tcli', ['init', `--config-path`, `${tomlConfigPath}`])
       await exec('./tcli', ['publish', `--config-path`, `${tomlConfigPath}`, `--token`, `${thunderstore_token}`])
       .catch((error) => core.setFailed(error));
     
