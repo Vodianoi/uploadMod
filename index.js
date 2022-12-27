@@ -66,9 +66,13 @@ async function run(){
       //Change js directory to tomlConfigPathDir
       process.chdir(tomlConfigPathDir);
 
-      //Rename tomlConfigPath to thunderstore.toml 
-      await exec('mv', `${tomlConfigPath} thunderstore.toml`)
-      .catch((error) => core.setFailed(error));
+      //Rename tomlConfigPath to thunderstore.toml if(tomlConfigPathFile != thunderstore.toml)
+      const tomlConfigPathFile = tomlConfigPath.substring(tomlConfigPath.lastIndexOf("/") + 1);
+      if(tomlConfigPathFile != "thunderstore.toml")
+      {
+        await exec('mv', `${tomlConfigPathFile}`, `./thunderstore.toml`)
+        .catch((error) => core.setFailed(error));
+      }
 
       //Edit thunderstore.toml file to change the version for the current version using @iarna/toml
       const toml = require('@iarna/toml');
@@ -89,10 +93,6 @@ async function run(){
       exec('./tcli', ['publish', `--token`, `${thunderstore_token}`]).catch((error) => core.setFailed(error));
     
     }
-
-
-
-
 
     // Upload mod to ModVault
     // Replace <mod-id>, <archive-file>, and <file-name> with the appropriate values
