@@ -1,4 +1,8 @@
- # __Upload mod to NexusMods and Thunderstore__
+# ___WORK IN PROGRESS___
+Does not currently work, will be working on Release 1.0.0 !
+
+
+# __Upload mod to NexusMods and Thunderstore__
  
  A GitHub Action to upload a mod to NexusMods and Thunderstore. This Action allows you to automate the process of uploading your mod to these popular modding platforms, making it easier to share your work with the community.
  
@@ -55,6 +59,6 @@
  
  ## __License__
  
- This Action is released under the MIT license. See [LICENSE](https://chat.openai.com/LICENSE) for more information.
+ This Action is released under the MIT license. See [LICENSE](https://github.com/Vodianoi/uploadMod/blob/main/LICENSE) for more information.
 
  
