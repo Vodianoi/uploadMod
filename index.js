@@ -9,7 +9,7 @@ async function run(){
     await exec('dotnet tool install -g Digitalroot.OdinPlusModUploader')
     .then(() => exec('wget https://github.com/thunderstore-io/thunderstore-cli/releases/download/0.1.7/tcli-0.1.7-linux-x64.tar.gz'))
     .then(() => exec('tar -xf tcli-0.1.7-linux-x64.tar.gz'))
-    .then(() => exec('mv ./tcli-0.1.7-linux-x64/tcli QuickPing/tcli'))
+    .then(() => exec('mv ./tcli-0.1.7-linux-x64/tcli tcli'))
     .catch((error) => core.setFailed(error));
 
 
@@ -48,23 +48,30 @@ async function run(){
                       
   
 
-    console.log('Starting directory: ' + process.cwd());
-    try {
-      process.chdir('QuickPing');
-      console.log('New directory: ' + process.cwd());
-    }
-    catch (err) {
-      console.log('chdir: ' + err);
-    }
-
     // Upload mod to Thunderstore
     // Replace <mod-id>, <archive-file>, and <file-name> with the appropriate values
     // The <version> and <description> parameters are optional
 
     if(tomlConfigPath != null)
     {
-      // await exec('QuickPing/tcli', ['init', `--config-path`, `${tomlConfigPath}`])
-      await exec('./tcli', ['publish', `--config-path`, `${tomlConfigPath}`, `--token`, `${thunderstore_token}`])
+      const fs = require('fs');
+
+
+      // Copy file at tomlConfigPath to current directory
+      fs.copyFile(tomlConfigPath, './thunderstore.toml', (err) => {
+        if (err) throw err;
+        console.log('tomlConfigPath was copied to current directory');
+      });
+
+      //Edit toml file to change package.versionNumber field to current version
+      const toml = require('toml');
+      const tomlFile = fs.readFileSync('./thunderstore.toml', 'utf8');
+      const tomlData = toml.parse(tomlFile);
+      tomlData.package.versionNumber = version;
+      fs.writeFileSync('./thunderstore.toml', toml.stringify(tomlData));
+
+      
+      await exec('./tcli', ['publish', `--token`, `${thunderstore_token}`])
       .catch((error) => core.setFailed(error));
     
     }
