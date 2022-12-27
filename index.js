@@ -9,7 +9,7 @@ async function run(){
     await exec('dotnet tool install -g Digitalroot.OdinPlusModUploader')
     .then(() => exec('wget https://github.com/thunderstore-io/thunderstore-cli/releases/download/0.1.7/tcli-0.1.7-linux-x64.tar.gz'))
     .then(() => exec('tar -xf tcli-0.1.7-linux-x64.tar.gz'))
-    .then(() => exec('mv ./tcli-0.1.7-linux-x64/tcli tcli'))
+    .then(() => exec('mv ./tcli-0.1.7-linux-x64/tcli QuickPing/tcli'))
     .catch((error) => core.setFailed(error));
 
 
@@ -56,15 +56,15 @@ async function run(){
 
     if(tomlConfigPath != null)
     {
-      await exec('./tcli', ['init', `--config-path`, `${tomlConfigPath}`])
-      await exec('./tcli', ['publish', `--config-path`, `${tomlConfigPath}`, `--token`, `${thunderstore_token}`])
+      // await exec('QuickPing/tcli', ['init', `--config-path`, `${tomlConfigPath}`])
+      await exec('QuickPing/tcli', ['publish', `--token`, `${thunderstore_token}`])
       .catch((error) => core.setFailed(error));
     
     }
     else
     {  
-      await exec('./tcli', ['init', `--package-name`, `${fileName}`, `--package-namespace`, `${namespace}`, `--package-version`, `${version}`]).catch((error) => core.setFailed(error));
-      exec('./tcli', ['publish', `--token`, `${thunderstore_token}`]).catch((error) => core.setFailed(error));
+      await exec('QuickPing/tcli', ['init', `--package-name`, `${fileName}`, `--package-namespace`, `${namespace}`, `--package-version`, `${version}`]).catch((error) => core.setFailed(error));
+      exec('QuickPing/tcli', ['publish', `--token`, `${thunderstore_token}`]).catch((error) => core.setFailed(error));
     
     }
 
