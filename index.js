@@ -64,7 +64,7 @@ async function run(){
       });
 
       //Edit toml file to change package.versionNumber field to current version, 
-      const toml = require('toml');
+      const toml = require('@iarna/toml')
       const tomlFile = fs.readFileSync('./thunderstore.toml', 'utf8');
       const tomlData = toml.parse(tomlFile);
       tomlData.package.versionNumber = version;
