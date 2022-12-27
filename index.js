@@ -52,26 +52,39 @@ async function run(){
     // Replace <mod-id>, <archive-file>, and <file-name> with the appropriate values
     // The <version> and <description> parameters are optional
 
+    //If archiveFile is not null, then publish the mod using the archiveFile
+    if(archiveFile != null)
+    {
+      await exec('./tcli', ['init', `--package-name`, `${fileName}`, `--package-namespace`, `${namespace}`, `--package-version`, `${version}`]).catch((error) => core.setFailed(error));
+      await exec('./tcli', ['publish', `--token`, `${thunderstore_token}`, `--file`, `${archiveFile}`]).catch((error) => core.setFailed(error));
+    }
+    else 
     if(tomlConfigPath != null)
     {
       const fs = require('fs');
 
 
-      // Copy file at tomlConfigPath to current directory
-      fs.copyFile(tomlConfigPath, './thunderstore.toml', (err) => {
-        if (err) throw err;
-        console.log('tomlConfigPath was copied to current directory');
-      });
+      //Copy tcli to the directory of tomlConfigPath file
+      const tomlConfigPathDir = tomlConfigPath.substring(0, tomlConfigPath.lastIndexOf("/"));
+      await exec('cp tcli', `${tomlConfigPathDir}`)
+      .catch((error) => core.setFailed(error));
 
-      //Edit toml file to change package.versionNumber field to current version, 
-      const toml = require('@iarna/toml')
-      const tomlFile = fs.readFileSync('./thunderstore.toml', 'utf8');
-      const tomlData = toml.parse(tomlFile);
-      tomlData.package.versionNumber = version;
-      fs.writeFileSync('./thunderstore.toml', toml.stringify(tomlData));
+      //cd to the directory of tomlConfigPath file
+      await exec('cd', `${tomlConfigPathDir}`)
+      .catch((error) => core.setFailed(error));
 
+      //rename tomlConfigPath file to thunderstore.toml
+      await exec('mv', `${tomlConfigPath}`, 'thunderstore.toml')
+      .catch((error) => core.setFailed(error));
+      
 
-
+      //Edit thunderstore.toml file to change the version for the current version using @iarna/toml
+      const toml = require('@iarna/toml');
+      const thunderstoreToml = fs.readFileSync('thunderstore.toml', 'utf8');
+      const thunderstoreTomlObj = toml.parse(thunderstoreToml);
+      thunderstoreTomlObj.package.versionNumber = version;
+      const thunderstoreTomlString = toml.stringify(thunderstoreTomlObj);
+      fs.writeFileSync('thunderstore.toml', thunderstoreTomlString, 'utf8');
 
 
       await exec('./tcli', ['publish', `--token`, `${thunderstore_token}`])
