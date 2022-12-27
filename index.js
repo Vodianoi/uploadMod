@@ -48,7 +48,14 @@ async function run(){
                       
   
 
-
+    console.log('Starting directory: ' + process.cwd());
+    try {
+      process.chdir('QuickPing');
+      console.log('New directory: ' + process.cwd());
+    }
+    catch (err) {
+      console.log('chdir: ' + err);
+    }
 
     // Upload mod to Thunderstore
     // Replace <mod-id>, <archive-file>, and <file-name> with the appropriate values
