@@ -63,14 +63,12 @@ async function run(){
       await exec('cp tcli', `${tomlConfigPathDir}`)
       .catch((error) => core.setFailed(error));
 
-      //cd to the directory of tomlConfigPath file
-      await exec('cd', `${tomlConfigPathDir}`)
-      .catch((error) => core.setFailed(error));
+      //Change js directory to tomlConfigPathDir
+      process.chdir(tomlConfigPathDir);
 
-      //rename tomlConfigPath file to thunderstore.toml
-      await exec('mv', `${tomlConfigPath}`, 'thunderstore.toml')
+      //Rename tomlConfigPath to thunderstore.toml 
+      await exec('mv', `${tomlConfigPath} thunderstore.toml`)
       .catch((error) => core.setFailed(error));
-      
 
       //Edit thunderstore.toml file to change the version for the current version using @iarna/toml
       const toml = require('@iarna/toml');
