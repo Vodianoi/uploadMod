@@ -39,7 +39,7 @@ async function run(){
                        `-v`, `${version}`,
                        `-g`, `${game}`,
                         `-t`, `${category}`,
-                        `-d`, `"${description}"`
+                        `-d`, `"${description}"`,
                         `-k`, `${apiKey}`,
                         `-cnxid`, `${cookieNexusId}`,
                         `-csid`, `${cookieSidDevelop}`
