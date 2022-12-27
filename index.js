@@ -64,14 +64,14 @@ async function run(){
     if(tomlConfigPath != null)
     {
       // await exec('QuickPing/tcli', ['init', `--config-path`, `${tomlConfigPath}`])
-      await exec('QuickPing/tcli', ['publish', `--config-path`, `${tomlConfigPath}`, `--token`, `${thunderstore_token}`])
+      await exec('./tcli', ['publish', `--config-path`, `${tomlConfigPath}`, `--token`, `${thunderstore_token}`])
       .catch((error) => core.setFailed(error));
     
     }
     else
     {  
-      await exec('QuickPing/tcli', ['init', `--package-name`, `${fileName}`, `--package-namespace`, `${namespace}`, `--package-version`, `${version}`]).catch((error) => core.setFailed(error));
-      exec('QuickPing/tcli', ['publish', `--token`, `${thunderstore_token}`]).catch((error) => core.setFailed(error));
+      await exec('./tcli', ['init', `--package-name`, `${fileName}`, `--package-namespace`, `${namespace}`, `--package-version`, `${version}`]).catch((error) => core.setFailed(error));
+      exec('./tcli', ['publish', `--token`, `${thunderstore_token}`]).catch((error) => core.setFailed(error));
     
     }
 
