@@ -32,8 +32,17 @@ async function run(){
 
     // Upload mod to NexusMods
     await exec('opmu', ['nexusmods', 'check', `-k`, `${apiKey}`, `-cnxid`, `${cookieNexusId}`, `-csid`, `${cookieSidDevelop}`])
-    .then(() => exec('opmu', ['nexusmods', 'upload', `${modId}`, `${archiveFile}`, `-f`, `${fileName}-${version}`, `-v`, `${version}`, `-t`, `${category}`,`-d`, `"${description}"`]))
-    .catch((error) => core.setFailed(error));
+          .catch((error) => core.setFailed(error));
+
+    await exec('opmu', ['nexusmods', 'upload', `${modId}`, `${archiveFile}`, 
+                      `-f`, `${fileName}-${version}`,
+                       `-v`, `${version}`,
+                       `-g`, `${game}`,
+                        `-t`, `${category}`,
+                        `-d`, `"${description}"`
+                        ])
+                        .catch((error) => core.setFailed(error));
+                      
   
 
 
@@ -50,11 +59,14 @@ async function run(){
     }
     else
     {  
-      await exec('./tcli', ['init', `--package-name`, `${fileName}`, `--package-namespace`, `${namespace}`, `--package-version`, `${version}`])
-      .then(() => exec('./tcli', ['publish', `--token`, `${thunderstore_token}`]))
-      .catch((error) => core.setFailed(error));
+      await exec('./tcli', ['init', `--package-name`, `${fileName}`, `--package-namespace`, `${namespace}`, `--package-version`, `${version}`]).catch((error) => core.setFailed(error));
+      exec('./tcli', ['publish', `--token`, `${thunderstore_token}`]).catch((error) => core.setFailed(error));
     
     }
+
+
+
+
 
     // Upload mod to ModVault
     // Replace <mod-id>, <archive-file>, and <file-name> with the appropriate values
