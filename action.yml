@@ -68,11 +68,11 @@ runs:
         namespace=${{ inputs.namespace }}
         tomlConfigPath=${{ inputs.tomlConfigPath }}
         # Set environment variables from repository secrets
-        apiKey=${{ secrets.NEXUSMOD_API_KEY }}
-        cookieNexusId=${{ secrets.NEXUSMOD_COOKIE_NEXUSID }}
-        cookieSidDevelop=${{ secrets.NEXUSMOD_COOKIE_SID_DEVELOP }}
-        thunderstore_token=${{ secrets.THUNDERSTORE_TOKEN }}
-        GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
+        apiKey=${{ inputs.NEXUSMOD_API_KEY }}
+        cookieNexusId=${{ inputs.NEXUSMOD_COOKIE_NEXUSID }}
+        cookieSidDevelop=${{ inputs.NEXUSMOD_COOKIE_SID_DEVELOP }}
+        thunderstore_token=${{ inputs.THUNDERSTORE_TOKEN }}
+        GITHUB_TOKEN=${{ inputs.GITHUB_TOKEN }}
 
         # Upload mod to NexusMods
         opmu nexusmods check -k $apiKey -cnxid $cookieNexusId -csid $cookieSidDevelop
