@@ -12,7 +12,7 @@ Before using this action, you will need to have the following:
 
 - A mod file that you want to upload.
 - An account on [NexusMods](https://www.nexusmods.com/) and [Thunderstore](https://www.thunderstore.io/).
-- An API key and session cookies for your NexusMods account (you can find instructions on how to obtain these [here](https://github.com/Digitalroot-Valheim/Digitalroot.OdinPlusModUploader/)).
+- An API key and session cookies for your NexusMods account (you can find instructions on how to obtain these [here](https://github.com/Digitalroot-Valheim/Digitalroot.OdinPlusModUploader/#FAQ)).
 - A token for your Thunderstore account.
 
 ## Inputs
