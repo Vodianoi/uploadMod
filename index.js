@@ -48,50 +48,59 @@ async function run(){
                       
   
 
-    // Upload mod to Thunderstore
-    // Replace <mod-id>, <archive-file>, and <file-name> with the appropriate values
-    // The <version> and <description> parameters are optional
 
-    //Check if tomlConfigPath is null
-    if(tomlConfigPath != null)
+    if(thunderstore_token != null)
     {
-      const fs = require('fs');
+      // Upload mod to Thunderstore
+      // Replace <mod-id>, <archive-file>, and <file-name> with the appropriate values
+      // The <version> and <description> parameters are optional
 
-
-      //Copy tcli to the directory of tomlConfigPath file
-      const tomlConfigPathDir = tomlConfigPath.substring(0, tomlConfigPath.lastIndexOf("/"));
-      await exec('cp tcli', `${tomlConfigPathDir}`)
-      .catch((error) => core.setFailed(error));
-
-      //Change js directory to tomlConfigPathDir
-      process.chdir(tomlConfigPathDir);
-
-      //Rename tomlConfigPath to thunderstore.toml if(tomlConfigPathFile != thunderstore.toml)
-      const tomlConfigPathFile = tomlConfigPath.substring(tomlConfigPath.lastIndexOf("/") + 1);
-      if(tomlConfigPathFile != "thunderstore.toml")
+      //Check if tomlConfigPath is null
+      if(archiveFile != null)
       {
-        await exec('mv', `${tomlConfigPathFile}`, `./thunderstore.toml`)
+        await exec('./tcli', ['publish', `--token`, `${thunderstore_token}`, `--file`, `${archiveFile}`])
         .catch((error) => core.setFailed(error));
       }
-
-      //Edit thunderstore.toml file to change the version for the current version using @iarna/toml
-      const toml = require('@iarna/toml');
-      const thunderstoreToml = fs.readFileSync('thunderstore.toml', 'utf8');
-      const thunderstoreTomlObj = toml.parse(thunderstoreToml);
-      thunderstoreTomlObj.package.versionNumber = version;
-      const thunderstoreTomlString = toml.stringify(thunderstoreTomlObj);
-      fs.writeFileSync('thunderstore.toml', thunderstoreTomlString, 'utf8');
+      else if(tomlConfigPath != null)
+      {
+        const fs = require('fs');
 
 
-      await exec('./tcli', ['publish', `--token`, `${thunderstore_token}`])
-      .catch((error) => core.setFailed(error));
-    
-    }
-    else
-    {  
-      await exec('./tcli', ['init', `--package-name`, `${fileName}`, `--package-namespace`, `${namespace}`, `--package-version`, `${version}`]).catch((error) => core.setFailed(error));
-      exec('./tcli', ['publish', `--token`, `${thunderstore_token}`]).catch((error) => core.setFailed(error));
-    
+        //Copy tcli to the directory of tomlConfigPath file
+        const tomlConfigPathDir = tomlConfigPath.substring(0, tomlConfigPath.lastIndexOf("/"));
+        await exec('cp tcli', `${tomlConfigPathDir}`)
+        .catch((error) => core.setFailed(error));
+
+        //Change js directory to tomlConfigPathDir
+        process.chdir(tomlConfigPathDir);
+
+        //Rename tomlConfigPath to thunderstore.toml if(tomlConfigPathFile != thunderstore.toml)
+        const tomlConfigPathFile = tomlConfigPath.substring(tomlConfigPath.lastIndexOf("/") + 1);
+        if(tomlConfigPathFile != "thunderstore.toml")
+        {
+          await exec('mv', `${tomlConfigPathFile}`, `./thunderstore.toml`)
+          .catch((error) => core.setFailed(error));
+        }
+
+        //Edit thunderstore.toml file to change the version for the current version using @iarna/toml
+        const toml = require('@iarna/toml');
+        const thunderstoreToml = fs.readFileSync('thunderstore.toml', 'utf8');
+        const thunderstoreTomlObj = toml.parse(thunderstoreToml);
+        thunderstoreTomlObj.package.versionNumber = version;
+        const thunderstoreTomlString = toml.stringify(thunderstoreTomlObj);
+        fs.writeFileSync('thunderstore.toml', thunderstoreTomlString, 'utf8');
+
+
+        await exec('./tcli', ['publish', `--token`, `${thunderstore_token}`])
+        .catch((error) => core.setFailed(error));
+      
+      }
+      else
+      {  
+        await exec('./tcli', ['init', `--package-name`, `${fileName}`, `--package-namespace`, `${namespace}`, `--package-version`, `${version}`]).catch((error) => core.setFailed(error));
+        exec('./tcli', ['publish', `--token`, `${thunderstore_token}`]).catch((error) => core.setFailed(error));
+      
+      }
     }
 
     // Upload mod to ModVault
@@ -103,8 +112,8 @@ async function run(){
     // Create a new comment on the commit with the upload result
     const octokit = github.getOctokit(GITHUB_TOKEN);
     const { owner, repo } = github.context.repo;
-    const { sha } = github.context.payload.head_commit;
-    const comment = `Successfully uploaded mod to NexusMods and Thunderstore: ${modId}`;
+    const { sha } = github.context.sha;
+    const comment = `Successfully uploaded mod to NexusMods and Thunderstore: ${version}`;
 
     await octokit.rest.repos.createCommitComment({ owner, repo, sha, body: comment })
           .catch((error) => core.setFailed(error))
