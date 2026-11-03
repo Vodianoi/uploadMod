@@ -1,81 +1,102 @@
-# ___WORK IN PROGRESS___
-Does not currently work, will be working on Release 1.0.0 !
+# Upload mod to Nexus Mods and Thunderstore
 
+A GitHub Action that uploads a new version of your mod to [Nexus Mods](https://www.nexusmods.com/) and/or [Thunderstore](https://thunderstore.io/) using each site's official tooling:
 
-# Upload mod to NexusMods and Thunderstore
+- **Nexus Mods** through [`Nexus-Mods/upload-action`](https://github.com/Nexus-Mods/upload-action) (Nexus Mods v3 API, API key only, no browser cookies)
+- **Thunderstore** through [`tcli`](https://github.com/thunderstore-io/thunderstore-cli) 0.2.4
 
-This GitHub Action allows you to automate the process of uploading and publishing a mod to NexusMods and Thunderstore.
+Each platform is optional: leave its key/token empty to skip it.
 
-## Prerequisites
+> [!NOTE]
+> `Nexus-Mods/upload-action` is still marked beta by Nexus Mods (`v1.0.0-beta.11` is pinned here).
 
-Before using this action, you will need to have the following:
+## Requirements
 
-- A mod file that you want to upload.
-- An account on [NexusMods](https://www.nexusmods.com/) and [Thunderstore](https://www.thunderstore.io/).
-- An API key and session cookies for your NexusMods account (you can find instructions on how to obtain these [here](https://github.com/Digitalroot-Valheim/Digitalroot.OdinPlusModUploader/#FAQ)).
-- A token for your Thunderstore account.
+- A runner with Node.js 20+ and the .NET SDK (both come preinstalled on GitHub-hosted runners). On self-hosted runners, add `actions/setup-dotnet` before this action.
+- **Nexus Mods:** an [API key](https://www.nexusmods.com/settings/api-keys) and an existing mod page with at least one uploaded file. The action adds a new version to that file, identified by its **file ID** (shown under "Advanced" on the mod's Files tab, or in the Manage Files edit menu).
+- **Thunderstore:** a service account token and a `thunderstore.toml` describing the package (namespace, communities, categories). See the [tcli wiki](https://github.com/thunderstore-io/thunderstore-cli/wiki).
 
 ## Inputs
 
-| Input                    | Description                                                                                                                                      | Required | Default |
-|--------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------|----------|---------|
-| `mod-id`                 | The mod ID on NexusMods.                                                                                                                        | Yes      |         |
-| `archive-file`           | The file to upload.                                                                                                                             | Yes      |         |
-| `file-name`              | The name of the file on NexusMods and Thunderstore.                                                                                              | Yes      |         |
-| `version`                | The version of the uploaded file.                                                                                                              | Yes      |         |
-| `category`               | The mod file category on NexusMods.                                                                                                             | No       | `Main`  |
-| `description`            | A description of the mod.                                                                                                                        | No       |         |
-| `game`                   | The game the mod is for.                                                                                                                        | Yes      |         |
-| `namespace`              | The namespace of the mod on Thunderstore.                                                                                                        | No       |         |
-| `tomlConfigPath`         | The path to the TOML configuration file for Thunderstore.                                                                                         | No       |         |
-| `NEXUSMOD_API_KEY`       | The API key for your NexusMods account.                                                                                                          | Yes      |         |
-| `NEXUSMOD_COOKIE_NEXUSID`| The session cookie for your NexusMods account.                                                                                                     | Yes      |         |
-| `NEXUSMOD_COOKIE_SID_DEVELOP` | The session cookie for your NexusMods account.                                                                                                    | Yes      |         |
-| `THUNDERSTORE_TOKEN`     | The token for your Thunderstore account.                                                                                                          | Yes      |         |
-| `GITHUB_TOKEN`           | The token for your Thunderstore account.                                                                                                          | Yes      |         |
+| Input | Description | Default |
+|---|---|---|
+| `version` | **Required.** Version of the upload. Thunderstore requires `Major.Minor.Patch`. | |
+| `archive-file` | Zip to upload. Not needed when only publishing to Thunderstore with `thunderstore-build`. | |
+| `file-name` | Display name of the file version on Nexus Mods. | zip file name |
+| `description` | Description of the file version on Nexus Mods. | |
+| `nexus-api-key` | Nexus Mods API key. Empty = skip Nexus Mods. | |
+| `nexus-file-id` | ID of the Nexus Mods file to add this version to. | |
+| `nexus-category` | `main`, `optional` or `miscellaneous`. | `main` |
+| `nexus-mod-id` | Mod ID, only needed with `nexus-changelog`. | |
+| `nexus-changelog` | Changelog text for this version. | |
+| `nexus-archive-existing-version` | Archive the previous version. | `false` |
+| `nexus-update-mod-version` | Set the mod's version to this file's version. | `false` |
+| `thunderstore-token` | Thunderstore token. Empty = skip Thunderstore. | |
+| `thunderstore-config` | Path to `thunderstore.toml`. | `thunderstore.toml` |
+| `thunderstore-build` | `true`: let tcli build the package from the config (with `version` applied) instead of publishing `archive-file`. | `false` |
+| `thunderstore-repository` | Thunderstore repository URL. | thunderstore.io |
+| `commit-comment` | Comment on the commit after a successful upload. | `true` |
+| `github-token` | Token for the commit comment. | `github.token` |
 
 ## Outputs
 
-This action does not have any outputs.
+| Output | Description |
+|---|---|
+| `nexus-version-id` | ID of the uploaded file version on Nexus Mods. |
 
-## Example usage
+## Example
 
-To use this action, you will need to create a workflow file in your repository. Here is an example workflow file that demonstrates how to use this action:
-
-```
-name: Upload mod
+```yaml
+name: Release mod
 on:
-  push:
-    branches: [ master ]
+  release:
+    types: [published]
+
+permissions:
+  contents: write # only needed for the commit comment
 
 jobs:
-  build:
+  upload:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Upload mod to NexusMods and Thunderstore
-      uses: ./
-      with:
-        mod-id: '123456'
-        archive-file: 'mod.zip'
-        file-name: 'My Mod'
-        version: '1.0.0'
-        category: 'Main'
-        description: 'This is a description of my mod.'
-        game: 'Rimworld'
-        namespace: 'my-namespace'
-        tomlConfigPath: './thunderstore.toml'
-        NEXUSMOD_API_KEY: ${{ secrets.NEXUSMOD_API_KEY }}
-        NEXUSMOD_COOKIE_NEXUSID: ${{ secrets.NEXUSMOD_COOKIE_NEXUSID }}
-        NEXUSMOD_COOKIE_SID_DEVELOP: ${{ secrets.NEXUSMOD_COOKIE_SID_DEVELOP }}
-        THUNDERSTORE_TOKEN: ${{ secrets.THUNDERSTORE_TOKEN }}
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/checkout@v7
 
+      - name: Build mod
+        run: zip -r MyMod.zip ./dist
+
+      - name: Upload to Nexus Mods and Thunderstore
+        uses: Vodianoi/uploadMod@v1
+        with:
+          version: ${{ github.event.release.tag_name }}
+          archive-file: MyMod.zip
+          file-name: My Mod
+          description: ${{ github.event.release.name }}
+          nexus-api-key: ${{ secrets.NEXUSMODS_API_KEY }}
+          nexus-file-id: '123456'
+          thunderstore-token: ${{ secrets.THUNDERSTORE_TOKEN }}
+          thunderstore-config: ./thunderstore.toml
 ```
 
-## Credits
+## Migrating from 0.9.x
 
-This action is built using the following open-source tools:
+Version 1.0 replaces the archived Digitalroot.ModUploader (`drmu`), which logged in with browser cookies, with the official Nexus Mods API.
 
-- [Digitalroot.OdinPlusModUploader](https://github.com/Digitalroot-Valheim/Digitalroot.OdinPlusModUploader/)
-- [thunderstore-cli](https://github.com/thunderstore-io/thunderstore-cli)
+| Old input | New input |
+|---|---|
+| `NEXUSMOD_API_KEY` | `nexus-api-key` |
+| `mod-id` | `nexus-file-id` (the **file** ID, not the mod ID) |
+| `category` (`Main`, …) | `nexus-category` (`main`, `optional`, `miscellaneous`) |
+| `NEXUSMOD_COOKIE_NEXUSID`, `NEXUSMOD_COOKIE_SID_DEVELOP` | removed, no cookies needed |
+| `game` | removed, the file ID identifies the game |
+| `THUNDERSTORE_TOKEN` | `thunderstore-token` |
+| `tomlConfigPath` | `thunderstore-config` |
+| `namespace` | removed, set it in `thunderstore.toml` |
+| `GITHUB_TOKEN` | `github-token` (optional) |
+
+## Development
+
+```sh
+npm test
+```
+
+The tests use Node's built-in test runner; there are no npm dependencies.

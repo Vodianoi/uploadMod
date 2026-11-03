@@ -1,0 +1,38 @@
+name: Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - run: npm test
+
+  # Runs the action itself with invalid inputs: it must load on GitHub and
+  # stop at the input check without uploading anything.
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Run action without credentials
+        id: action
+        continue-on-error: true
+        uses: ./
+        with:
+          version: 1.0.0
+          commit-comment: 'false'
+      - name: Expect the input check to fail
+        if: steps.action.outcome != 'failure'
+        run: |
+          echo "::error::Expected the action to fail without credentials"
+          exit 1
