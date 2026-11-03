@@ -1,51 +1,146 @@
-name: Upload mod to NexusMods, Thunderstore
-description: A GitHub Action to upload a mod to NexusMods, Thunderstore.
+name: Upload mod to Nexus Mods and Thunderstore
+description: Upload a new mod version to Nexus Mods (official upload action) and Thunderstore (official tcli).
+branding:
+  icon: upload-cloud
+  color: orange
+
 inputs:
-  mod-id:
-    description: 'The mod ID on NexusMods'
+  version:
+    description: Version of the uploaded file. Thunderstore needs Major.Minor.Patch (e.g. 1.2.3).
     required: true
   archive-file:
-    description: 'The file to upload.'
-    required: true
+    description: Path to the zip to upload. Required unless you only publish to Thunderstore with thunderstore-build.
+    required: false
   file-name:
-    description: 'The name of the file on NexusMods, Thunderstore'
-    required: true
-  version:
-    description: 'The version of the uploaded file.'
-    required: true
-  category:
-    description: 'The mod file category on NexusMods.'
-    required: true
-    default: 'Main'
+    description: Display name of the file version on Nexus Mods. Defaults to the zip's file name.
+    required: false
   description:
-    description: 'A description of the mod.'
-    required: false
-  game:
-    description: 'The game the mod is for.'
-    required: true
-  namespace:
-    description: 'The namespace of the mod on Thunderstore.'
-    required: false
-  tomlConfigPath:
-    description: 'The path to the toml configuration file for Thunderstore.'
+    description: Description of the file version on Nexus Mods.
     required: false
 
-  NEXUSMOD_API_KEY:
-    description: 'The API key for your NexusMods account.'
-    required: true
-  NEXUSMOD_COOKIE_NEXUSID:
-    description: 'The session cookie for your NexusMods account.'
-    required: true
-  NEXUSMOD_COOKIE_SID_DEVELOP:
-    description: 'The session cookie for your NexusMods account.'
-    required: true
-  THUNDERSTORE_TOKEN:
-    description: 'The token for your Thunderstore account.'
-    required: true
-  GITHUB_TOKEN:
-    description: 'The token for your Thunderstore account.'
-    required: true
+  nexus-api-key:
+    description: Nexus Mods API key (https://www.nexusmods.com/settings/api-keys). Leave empty to skip Nexus Mods.
+    required: false
+  nexus-file-id:
+    description: ID of the existing Nexus Mods file to add this version to.
+    required: false
+  nexus-mod-id:
+    description: Nexus Mods mod ID. Only needed together with nexus-changelog.
+    required: false
+  nexus-category:
+    description: 'File category on Nexus Mods: main, optional or miscellaneous.'
+    required: false
+    default: main
+  nexus-changelog:
+    description: Changelog text for this version on Nexus Mods. Requires nexus-mod-id.
+    required: false
+  nexus-archive-existing-version:
+    description: Archive the previous version on Nexus Mods.
+    required: false
+    default: 'false'
+  nexus-update-mod-version:
+    description: Update the mod's version on Nexus Mods to match this file.
+    required: false
+    default: 'false'
+
+  thunderstore-token:
+    description: Thunderstore service account token. Leave empty to skip Thunderstore.
+    required: false
+  thunderstore-config:
+    description: Path to thunderstore.toml (package metadata, communities and categories).
+    required: false
+    default: thunderstore.toml
+  thunderstore-build:
+    description: When true, tcli builds the package from thunderstore-config (with version applied) instead of publishing archive-file.
+    required: false
+    default: 'false'
+  thunderstore-repository:
+    description: Thunderstore repository URL. Defaults to tcli's default (thunderstore.io).
+    required: false
+
+  commit-comment:
+    description: Comment on the commit after a successful upload. Needs "contents write" permission.
+    required: false
+    default: 'true'
+  github-token:
+    description: Token used for the commit comment.
+    required: false
+    default: ${{ github.token }}
+
+outputs:
+  nexus-version-id:
+    description: ID of the uploaded file version on Nexus Mods.
+    value: ${{ steps.nexus.outputs.version_id }}
 
 runs:
-  using: 'node12'
-  main: 'index.js'
+  using: composite
+  steps:
+    - name: Check inputs
+      id: prepare
+      shell: bash
+      run: node "${{ github.action_path }}/src/prepare.js"
+      env:
+        INPUT_VERSION: ${{ inputs.version }}
+        INPUT_ARCHIVE_FILE: ${{ inputs.archive-file }}
+        INPUT_NEXUS_API_KEY: ${{ inputs.nexus-api-key }}
+        INPUT_NEXUS_FILE_ID: ${{ inputs.nexus-file-id }}
+        INPUT_NEXUS_MOD_ID: ${{ inputs.nexus-mod-id }}
+        INPUT_NEXUS_CATEGORY: ${{ inputs.nexus-category }}
+        INPUT_NEXUS_CHANGELOG: ${{ inputs.nexus-changelog }}
+        INPUT_THUNDERSTORE_TOKEN: ${{ inputs.thunderstore-token }}
+        INPUT_THUNDERSTORE_CONFIG: ${{ inputs.thunderstore-config }}
+        INPUT_THUNDERSTORE_BUILD: ${{ inputs.thunderstore-build }}
+
+    - name: Upload to Nexus Mods
+      id: nexus
+      if: steps.prepare.outputs.nexus == 'true'
+      # Nexus-Mods/upload-action v1.0.0-beta.11
+      uses: Nexus-Mods/upload-action@98532f7670c27cbecc78fae03fa3e278147827e2
+      with:
+        api_key: ${{ inputs.nexus-api-key }}
+        file_id: ${{ inputs.nexus-file-id }}
+        filename: ${{ inputs.archive-file }}
+        version: ${{ inputs.version }}
+        display_name: ${{ inputs.file-name }}
+        description: ${{ inputs.description }}
+        category: ${{ steps.prepare.outputs.nexus-category }}
+        mod_id: ${{ inputs.nexus-mod-id }}
+        changelog: ${{ inputs.nexus-changelog }}
+        archive_existing_version: ${{ inputs.nexus-archive-existing-version }}
+        update_mod_version: ${{ inputs.nexus-update-mod-version }}
+
+    - name: Install Thunderstore CLI
+      if: steps.prepare.outputs.thunderstore == 'true'
+      shell: bash
+      run: |
+        if ! command -v dotnet >/dev/null; then
+          echo "::error::The .NET SDK is required to install tcli. Add actions/setup-dotnet before this action."
+          exit 1
+        fi
+        dir="$RUNNER_TEMP/tcli"
+        bin="$dir/tcli"
+        if [ "$RUNNER_OS" = "Windows" ]; then bin="$bin.exe"; fi
+        if [ ! -x "$bin" ]; then
+          dotnet tool install tcli --version 0.2.4 --tool-path "$dir"
+        fi
+        echo "TCLI_BIN=$bin" >> "$GITHUB_ENV"
+
+    - name: Publish to Thunderstore
+      if: steps.prepare.outputs.thunderstore == 'true'
+      shell: bash
+      run: node "${{ github.action_path }}/src/thunderstore.js"
+      env:
+        TCLI_AUTH_TOKEN: ${{ inputs.thunderstore-token }}
+        INPUT_VERSION: ${{ inputs.version }}
+        INPUT_ARCHIVE_FILE: ${{ inputs.archive-file }}
+        INPUT_THUNDERSTORE_CONFIG: ${{ inputs.thunderstore-config }}
+        INPUT_THUNDERSTORE_BUILD: ${{ inputs.thunderstore-build }}
+        INPUT_THUNDERSTORE_REPOSITORY: ${{ inputs.thunderstore-repository }}
+
+    - name: Comment on commit
+      if: inputs.commit-comment == 'true'
+      shell: bash
+      run: gh api "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA/comments" -f body="$BODY" --silent
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+        BODY: ${{ steps.prepare.outputs.comment-body }}
