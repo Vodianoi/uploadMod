@@ -182,7 +182,7 @@ async function checkThunderstore(env) {
 const CHECKS = { nexus: checkNexus, thunderstore: checkThunderstore };
 
 async function main(platform, env = process.env) {
-  const check = CHECKS[platform];
+  const check = Object.hasOwn(CHECKS, platform) ? CHECKS[platform] : null;
   if (!check) {
     console.log(`::error::Unknown platform "${platform}".`);
     return 1;
