@@ -82,7 +82,7 @@ async function fakeApi(t, routes) {
     req.on('end', () => {
       const key = `${req.method} ${req.url}`;
       calls.push({ key, headers: req.headers, body });
-      const handler = routes[key];
+      const handler = Object.hasOwn(routes, key) ? routes[key] : null;
       const [status, json] = handler ? handler(req, body) : [404, { detail: 'Not found.' }];
       res.writeHead(status, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify(json));
@@ -319,4 +319,12 @@ test('unknown platform fails', async (t) => {
   const r = await run(['steam'], {}, tempDir(t));
   assert.equal(r.status, 1);
   assert.match(r.stdout, /Unknown platform/);
+});
+
+test('inherited object properties are not platforms', async (t) => {
+  for (const name of ['constructor', 'toString', '__proto__']) {
+    const r = await run([name], {}, tempDir(t));
+    assert.equal(r.status, 1, name);
+    assert.match(r.stdout, /Unknown platform/);
+  }
 });
