@@ -8,6 +8,7 @@ const {
   normalizeNexusCategory,
   resolvePlan,
   tcliPublishArgs,
+  tomlPackageNamespace,
   commitCommentBody,
 } = require('../src/lib');
 
@@ -143,6 +144,33 @@ test('resolvePlan', async (t) => {
     const plan = resolvePlan({ ...nexusInputs, ...thunderstoreInputs }, allExist);
     assert.equal(plan.nexus, true);
     assert.equal(plan.thunderstore, true);
+    assert.equal(plan.dryRun, false);
+  });
+
+  await t.test('dry run', () => {
+    assert.equal(resolvePlan({ ...nexusInputs, 'dry-run': 'true' }, allExist).dryRun, true);
+    assert.throws(() => resolvePlan({ ...nexusInputs, 'dry-run': 'yes' }, allExist), /dry-run/);
+  });
+
+  await t.test('dry run still checks the inputs', () => {
+    assert.throws(
+      () => resolvePlan({ ...nexusInputs, 'nexus-file-id': '', 'dry-run': 'true' }, allExist),
+      /nexus-file-id/
+    );
+  });
+});
+
+test('tomlPackageNamespace', async (t) => {
+  await t.test('reads the [package] namespace', () => {
+    const toml = '[config]\nnamespace = "nope"\n\n[package]\nname = "Mod"\nnamespace = "Atopy" # team\n';
+    assert.equal(tomlPackageNamespace(toml), 'Atopy');
+  });
+  await t.test('accepts single quotes and CRLF', () => {
+    assert.equal(tomlPackageNamespace("[package]\r\nnamespace = 'Team'\r\n"), 'Team');
+  });
+  await t.test('ignores other tables', () => {
+    assert.equal(tomlPackageNamespace('[package.dependencies]\nnamespace = "x"\n'), '');
+    assert.equal(tomlPackageNamespace(''), '');
   });
 });
 

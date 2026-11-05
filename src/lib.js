@@ -45,6 +45,7 @@ function resolvePlan(inputs, exists = fs.existsSync) {
   const nexus = get('nexus-api-key') !== '';
   const thunderstore = get('thunderstore-token') !== '';
   const thunderstoreBuild = parseBool(inputs['thunderstore-build'], 'thunderstore-build');
+  const dryRun = parseBool(inputs['dry-run'], 'dry-run');
 
   if (!nexus && !thunderstore) {
     throw new InputError(
@@ -93,6 +94,7 @@ function resolvePlan(inputs, exists = fs.existsSync) {
     thunderstore,
     thunderstoreBuild,
     thunderstoreConfig,
+    dryRun,
   };
 }
 
@@ -111,6 +113,26 @@ function tcliPublishArgs({ archiveFile, version, config, build, repository }) {
   return args;
 }
 
+/**
+ * Reads `namespace` from the [package] table of a thunderstore.toml.
+ * Only handles the simple `key = "value"` form tcli's own templates use.
+ */
+function tomlPackageNamespace(text) {
+  let section = '';
+  for (const raw of String(text).split(/\r?\n/)) {
+    const line = raw.replace(/\s+#.*$/, '').trim();
+    const header = line.match(/^\[\s*([^\]]+?)\s*\]$/);
+    if (header) {
+      section = header[1];
+      continue;
+    }
+    if (section !== 'package') continue;
+    const m = line.match(/^namespace\s*=\s*(?:"([^"]*)"|'([^']*)')$/);
+    if (m) return m[1] ?? m[2];
+  }
+  return '';
+}
+
 function commitCommentBody({ version, nexus, thunderstore }) {
   const targets = [nexus && 'Nexus Mods', thunderstore && 'Thunderstore'].filter(Boolean);
   if (targets.length === 0) return '';
@@ -124,5 +146,6 @@ module.exports = {
   normalizeNexusCategory,
   resolvePlan,
   tcliPublishArgs,
+  tomlPackageNamespace,
   commitCommentBody,
 };

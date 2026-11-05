@@ -36,3 +36,38 @@ jobs:
         run: |
           echo "::error::Expected the action to fail without credentials"
           exit 1
+
+  # Runs a dry run against the real Nexus Mods and Thunderstore APIs with
+  # fake credentials: the checks must reject them, and nothing is uploaded.
+  dry-run:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [nexus, thunderstore]
+    steps:
+      - uses: actions/checkout@v7
+      - name: Make a test package
+        run: |
+          mkdir pkg && cd pkg
+          echo '{"name":"Test","version_number":"1.0.0","website_url":"","description":"t","dependencies":[]}' > manifest.json
+          echo '# Test' > README.md
+          printf 'png' > icon.png
+          zip -q ../test.zip manifest.json README.md icon.png
+          cd .. && printf '[package]\nnamespace = "uploadMod-ci"\nname = "Test"\n' > thunderstore.toml
+      - name: Dry run with fake credentials
+        id: action
+        continue-on-error: true
+        uses: ./
+        with:
+          version: 1.0.0
+          archive-file: test.zip
+          dry-run: 'true'
+          nexus-api-key: ${{ matrix.platform == 'nexus' && 'not-a-real-key' || '' }}
+          nexus-file-id: '1'
+          thunderstore-token: ${{ matrix.platform == 'thunderstore' && 'tss_not-a-real-token' || '' }}
+      - name: Expect the credential check to fail
+        if: steps.action.outcome != 'failure'
+        run: |
+          echo "::error::Expected the dry run to reject fake credentials"
+          exit 1

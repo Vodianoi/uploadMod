@@ -64,8 +64,32 @@ test('prepare.js writes outputs for both platforms', (t) => {
     nexus: 'true',
     'nexus-category': 'main',
     thunderstore: 'true',
+    'thunderstore-build': 'false',
+    'dry-run': 'false',
     'comment-body': 'Uploaded version 1.2.3 to Nexus Mods and Thunderstore.',
   });
+});
+
+test('prepare.js dry run: no commit comment', (t) => {
+  const dir = tempDir(t);
+  fs.writeFileSync(path.join(dir, 'mod.zip'), '');
+  const output = path.join(dir, 'out');
+  const result = run(
+    'prepare.js',
+    {
+      GITHUB_OUTPUT: output,
+      INPUT_VERSION: '1.2.3',
+      INPUT_ARCHIVE_FILE: 'mod.zip',
+      INPUT_NEXUS_API_KEY: 'key',
+      INPUT_NEXUS_FILE_ID: '42',
+      INPUT_DRY_RUN: 'TRUE',
+    },
+    dir
+  );
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+  const outputs = readOutputs(output);
+  assert.equal(outputs['dry-run'], 'true');
+  assert.equal(outputs['comment-body'], '');
 });
 
 test('prepare.js fails with an annotation on bad input', (t) => {

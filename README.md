@@ -35,6 +35,7 @@ Each platform is optional: leave its key/token empty to skip it.
 | `thunderstore-config` | Path to `thunderstore.toml`. | `thunderstore.toml` |
 | `thunderstore-build` | `true`: let tcli build the package from the config (with `version` applied) instead of publishing `archive-file`. | `false` |
 | `thunderstore-repository` | Thunderstore repository URL. | thunderstore.io |
+| `dry-run` | `true`: upload nothing, only check inputs, credentials and the package (see [Testing without uploading](#testing-without-uploading)). | `false` |
 | `commit-comment` | Comment on the commit after a successful upload. | `true` |
 | `github-token` | Token for the commit comment. | `github.token` |
 
@@ -75,6 +76,40 @@ jobs:
           nexus-file-id: '123456'
           thunderstore-token: ${{ secrets.THUNDERSTORE_TOKEN }}
           thunderstore-config: ./thunderstore.toml
+```
+
+## Testing without uploading
+
+Set `dry-run: 'true'` to run your whole release workflow without publishing anything. The action then:
+
+| Check | Nexus Mods | Thunderstore |
+|---|---|---|
+| Inputs (version format, files exist, IDs are numbers) | ✔ | ✔ |
+| Credentials | API key is valid (prints the account name) | Token is valid |
+| Target | `nexus-file-id` exists; with `nexus-mod-id`, it belongs to that mod | Token may upload to the `thunderstore.toml` namespace (team) |
+| Package | | Zip has `manifest.json`, `icon.png` and `README.md` at its root, and Thunderstore's own validator accepts the manifest (name, version not already published, dependencies exist) |
+
+It only calls read-only or validate-only endpoints, skips the commit comment, and in `thunderstore-build` mode runs `tcli build` instead of `tcli publish`.
+
+Nexus Mods has no validate-only upload endpoint, so a dry run cannot prove the key may add versions to the file: it confirms the key works and the file exists. For a real end-to-end Thunderstore test, publish to the staging site with `thunderstore-repository: https://thunderstore.dev` and a thunderstore.dev token.
+
+```yaml
+on:
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        type: boolean
+        default: true
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    steps:
+      # ... build the mod ...
+      - uses: Vodianoi/uploadMod@v1
+        with:
+          dry-run: ${{ inputs.dry-run }}
+          # ... same inputs as a real release ...
 ```
 
 ## Migrating from 0.9.x
