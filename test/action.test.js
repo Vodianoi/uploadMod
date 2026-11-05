@@ -42,3 +42,18 @@ test('secrets are not interpolated into run scripts', () => {
     assert.doesNotMatch(script, /token|api-key/i, script);
   }
 });
+
+test('a dry run skips every step that uploads or comments', () => {
+  const steps = action.split(/^ {4}- name: /m).slice(1);
+  const writers = steps.filter((s) => /^(Upload|Publish|Comment)/.test(s));
+  assert.equal(writers.length, 3);
+  for (const step of writers) {
+    assert.match(step, /steps\.prepare\.outputs\.dry-run != 'true'/, step.split('\n')[0]);
+  }
+});
+
+test('dry-run checks only run in a dry run', () => {
+  const checks = action.split(/^ {4}- name: /m).filter((s) => s.startsWith('Check ') && s.includes('check.js'));
+  assert.equal(checks.length, 2);
+  for (const step of checks) assert.match(step, /steps\.prepare\.outputs\.dry-run == 'true'/);
+});

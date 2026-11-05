@@ -58,6 +58,14 @@ inputs:
     description: Thunderstore repository URL. Defaults to tcli's default (thunderstore.io).
     required: false
 
+  dry-run:
+    description: >-
+      When true, nothing is uploaded. Instead the action checks the inputs, the Nexus Mods API key and
+      file ID, the Thunderstore token and team permission, and validates the package's manifest.json
+      with Thunderstore. No commit comment is made.
+    required: false
+    default: 'false'
+
   commit-comment:
     description: Comment on the commit after a successful upload. Needs "contents write" permission.
     required: false
@@ -90,10 +98,20 @@ runs:
         INPUT_THUNDERSTORE_TOKEN: ${{ inputs.thunderstore-token }}
         INPUT_THUNDERSTORE_CONFIG: ${{ inputs.thunderstore-config }}
         INPUT_THUNDERSTORE_BUILD: ${{ inputs.thunderstore-build }}
+        INPUT_DRY_RUN: ${{ inputs.dry-run }}
+
+    - name: Check Nexus Mods (dry run)
+      if: steps.prepare.outputs.nexus == 'true' && steps.prepare.outputs.dry-run == 'true'
+      shell: bash
+      run: node "${{ github.action_path }}/src/check.js" nexus
+      env:
+        INPUT_NEXUS_API_KEY: ${{ inputs.nexus-api-key }}
+        INPUT_NEXUS_FILE_ID: ${{ inputs.nexus-file-id }}
+        INPUT_NEXUS_MOD_ID: ${{ inputs.nexus-mod-id }}
 
     - name: Upload to Nexus Mods
       id: nexus
-      if: steps.prepare.outputs.nexus == 'true'
+      if: steps.prepare.outputs.nexus == 'true' && steps.prepare.outputs.dry-run != 'true'
       # Nexus-Mods/upload-action v1.0.0-beta.11
       uses: Nexus-Mods/upload-action@98532f7670c27cbecc78fae03fa3e278147827e2
       with:
@@ -110,7 +128,10 @@ runs:
         update_mod_version: ${{ inputs.nexus-update-mod-version }}
 
     - name: Install Thunderstore CLI
-      if: steps.prepare.outputs.thunderstore == 'true'
+      # A dry run only needs tcli to build the package.
+      if: >-
+        steps.prepare.outputs.thunderstore == 'true' &&
+        (steps.prepare.outputs.dry-run != 'true' || steps.prepare.outputs.thunderstore-build == 'true')
       shell: bash
       run: |
         if ! command -v dotnet >/dev/null; then
@@ -125,8 +146,20 @@ runs:
         fi
         echo "TCLI_BIN=$bin" >> "$GITHUB_ENV"
 
+    - name: Check Thunderstore (dry run)
+      if: steps.prepare.outputs.thunderstore == 'true' && steps.prepare.outputs.dry-run == 'true'
+      shell: bash
+      run: node "${{ github.action_path }}/src/check.js" thunderstore
+      env:
+        TCLI_AUTH_TOKEN: ${{ inputs.thunderstore-token }}
+        INPUT_VERSION: ${{ inputs.version }}
+        INPUT_ARCHIVE_FILE: ${{ inputs.archive-file }}
+        INPUT_THUNDERSTORE_CONFIG: ${{ inputs.thunderstore-config }}
+        INPUT_THUNDERSTORE_BUILD: ${{ inputs.thunderstore-build }}
+        INPUT_THUNDERSTORE_REPOSITORY: ${{ inputs.thunderstore-repository }}
+
     - name: Publish to Thunderstore
-      if: steps.prepare.outputs.thunderstore == 'true'
+      if: steps.prepare.outputs.thunderstore == 'true' && steps.prepare.outputs.dry-run != 'true'
       shell: bash
       run: node "${{ github.action_path }}/src/thunderstore.js"
       env:
@@ -138,7 +171,7 @@ runs:
         INPUT_THUNDERSTORE_REPOSITORY: ${{ inputs.thunderstore-repository }}
 
     - name: Comment on commit
-      if: inputs.commit-comment == 'true'
+      if: inputs.commit-comment == 'true' && steps.prepare.outputs.dry-run != 'true'
       shell: bash
       run: gh api "repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA/comments" -f body="$BODY" --silent
       env:

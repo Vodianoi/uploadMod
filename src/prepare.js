@@ -17,6 +17,7 @@ const INPUTS = [
   'thunderstore-token',
   'thunderstore-config',
   'thunderstore-build',
+  'dry-run',
 ];
 
 function readInputs(env) {
@@ -41,7 +42,9 @@ function main(env = process.env) {
     nexus: String(plan.nexus),
     'nexus-category': plan.nexusCategory,
     thunderstore: String(plan.thunderstore),
-    'comment-body': commitCommentBody(plan),
+    'thunderstore-build': String(plan.thunderstoreBuild),
+    'dry-run': String(plan.dryRun),
+    'comment-body': plan.dryRun ? '' : commitCommentBody(plan),
   };
   const lines = Object.entries(outputs).map(([k, v]) => `${k}=${v}\n`).join('');
   if (env.GITHUB_OUTPUT) fs.appendFileSync(env.GITHUB_OUTPUT, lines);
